@@ -1,0 +1,158 @@
+{% extends 'products/base_list.html' %}
+
+{% load i18n %}
+
+{% block list %}
+    <div class="pull-right">
+        <a id="check_warning" href="javascript:void(0)" class="show_element">Hide process</a>
+        <a id="check_success" href="javascript:void(0)" class="show_element">Hide ready</a>
+    </div>
+    <style>
+        a {
+            margin-left: 10px;
+        }
+        #check_warning, #check_warning:hover, #check_warning:focus, #check_warning:active, #check_success, #check_success:hover, #check_success:focus, #check_success, #check_success:active {
+            text-decoration: none;
+            color: #FFFFFF;
+            float: right;
+            height: 34px;
+            line-height: 34px;
+            width: 125px;
+            margin-bottom: 16px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        #check_warning, #check_warning:hover, #check_warning:focus, #check_warning:active {
+            background: #d99a4a;
+            border: 1px solid #d99000;
+        }
+        #check_success, #check_success:hover, #check_success:focus, #check_success, #check_success:active {
+            background: #00C159;
+            border: 1px solid #00A912;
+        }
+    </style>
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <td>
+                {% trans 'Name' %}
+            </td>
+
+            <td>
+                {% trans 'Invoice' %}
+            </td>
+
+            <td>
+                {% trans 'Total weight' %}
+            </td>
+
+            <td>
+                {% trans 'Status' %}
+            </td>
+            <td>
+                {% trans 'Time' %}
+            </td>
+            <td>
+                {% trans 'On Close' %}
+            </td>
+        </tr>
+        </thead>
+        <tbody class="list">
+        {% for object in object_list %}
+            {% if object.in_close_time < 2 %}
+                <tr data-href="{{ object.get_absolute_url }}">
+                    <td class="name">
+                        {{ object }}
+                    </td>
+                    <td class="invoice">
+                        {{ object.invoice }}
+                    </td>
+                    <td class="total-weight">
+                        {{ object.total_weight }}
+                    </td>
+                    {% if object.box_set.count %}
+                        {% if object.is_closed %}
+                            <td class="status success">
+                                <span class="label label-success">{% trans 'Ready' %}</span>
+                            </td>
+                        {% else %}
+                            <td class="status warning">
+                                <span class="label label-warning">{% trans 'In progress' %}</span>
+                            </td>
+                        {% endif %}
+                    {% endif %}
+                    <td>
+                        {{ object.time_close }}
+                    </td>
+                    <td>
+                        {{ object.in_close }}
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock list %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script>
+        $(function () {
+            $('.table tr[data-href]').each(function () {
+                $(this).css('cursor', 'pointer').hover(
+                        function () {
+                            $(this).addClass('active');
+                        },
+                        function () {
+                            $(this).removeClass('active');
+                        }).click(function () {
+                            document.location = $(this).attr('data-href');
+                        }
+                );
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#check_warning").on('click', function () {
+                var cl = $(this).attr('class');
+                if (cl == "show_element") {
+                    $(this).removeClass('show_element').addClass('hide_element');
+                    $('.warning').parent().css('display', 'none');
+                }
+                else if (cl == "hide_element") {
+                    $(this).removeClass('hide_element').addClass('show_element');
+                    $('.warning').parent().css('display', 'table-row');
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#check_success").on('click', function () {
+                var cl = $(this).attr('class');
+                if (cl == "show_element") {
+                    $(this).removeClass('show_element').addClass('hide_element');
+                    $('.success').parent().css('display', 'none');
+                }
+                else if (cl == "hide_element") {
+                    $(this).removeClass('hide_element').addClass('show_element');
+                    $('.success').parent().css('display', 'table-row');
+                }
+            });
+        });
+    </script>
+{% endblock scripts %}
+
+{% block list_js_options %}
+    <script>
+        var LIST_JS_OPTIONS = {
+            valueNames: [
+                'name',
+                'invoice',
+                'total-weight',
+                'status'
+            ]
+        }
+    </script>
+{% endblock list_js_options %}
