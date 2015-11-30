@@ -121,6 +121,9 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
     def get_create_url(self):
         return reverse(self.create_url, kwargs=self.kwargs)
 
+    def get_archive_url(self):
+        return reverse(self.archive_url, kwargs=self.kwargs)
+
     def get_header(self):
         return self.model._meta.verbose_name_plural.title()
 
@@ -136,12 +139,19 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
 
         return super().get_queryset().filter(**filter_kwargs)
 
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         context['header'] = self.get_header()
         context['paths'] = self.get_parents()
         context['create_url'] = self.get_create_url()
+        if self.get_header() == 'Customers':
+            context['archive_url'] = self.get_archive_url()
+            if self.request.path:
+                context['button'] = self.request.path
+            else:
+                context['button'] = '/customers/'
         context['verbose_name'] = self.model._meta.verbose_name
 
         if hasattr(self.model, 'parent'):
@@ -227,6 +237,7 @@ class CustomerMixin(object):
 
 class CustomerListView(CustomerMixin, BaseListView):
     create_url = 'customer-create'
+    archive_url = 'customer-archive'
     template_name = 'products/customer_list.html'
 
 
@@ -238,6 +249,12 @@ class CustomerCreateView(CustomerMixin, BaseCreateView):
         'in_close',
         'time_close',
     )
+
+
+class CustomerArchiveView(CustomerMixin, BaseListView):
+    create_url = 'customer-create'
+    archive_url = 'customer-archive'
+    template_name = 'products/customer_list.html'
 
 
 class CustomerDeleteView(CustomerMixin, BaseDeleteView):

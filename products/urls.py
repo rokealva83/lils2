@@ -22,6 +22,8 @@ from .views import (
 
     LogsView,
     LogsExportView,
+
+    CustomerArchiveView,
 )
 
 urlpatterns = (
@@ -66,6 +68,12 @@ urlpatterns = (
         r'^customers/create/$',
         CustomerCreateView.as_view(),
         name='customer-create'
+    ),
+
+    url(
+        r'^customers/archive/$',
+        CustomerArchiveView.as_view(),
+        name='customer-archive'
     ),
 
     url(

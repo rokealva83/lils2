@@ -38,12 +38,22 @@
 
                     {% trans 'New' %} {{ verbose_name }}
                 </a>
+                {%  if button == '/customers/archive/' %}
+                    <a href="/customers/" class="btn btn-primary">
+                        <span class="glyphicon"></span>
 
-                <a href="{{ arhive_url }}" class="btn btn-info">
-                    <span class="glyphicon"></span>
+                        Customers
+                    </a>
+                    {% else %}
+                    {% if verbose_name == 'customer' %}
+                        <a href="{{ archive_url }}" class="btn btn-info">
+                            <span class="glyphicon"></span>
 
-                    {% trans 'Arhive' %} {{ verbose_name }}
-                </a>
+                            {% trans 'Archive' %} {{ verbose_name }}
+                        </a>
+
+                    {% endif %}
+                {% endif %}
 
                 {% if user.is_superuser and parent %}
                     <a href="{{ parent.get_delete_url }}" class="btn btn-danger">

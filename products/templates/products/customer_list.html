@@ -49,17 +49,34 @@
             <td>
                 {% trans 'Status' %}
             </td>
-            <td>
-                {% trans 'Time' %}
-            </td>
-            <td>
-                {% trans 'On Close' %}
-            </td>
         </tr>
         </thead>
         <tbody class="list">
         {% for object in object_list %}
-            {% if object.in_close_time < 2 %}
+            {% if button == '/customers/' and object.in_close_time < 30 %}
+                <tr data-href="{{ object.get_absolute_url }}">
+                    <td class="name">
+                        {{ object }}0
+                    </td>
+                    <td class="invoice">
+                        {{ object.invoice }}
+                    </td>
+                    <td class="total-weight">
+                        {{ object.total_weight }}
+                    </td>
+                    {% if object.box_set.count %}
+                        {% if object.is_closed %}
+                            <td class="status success">
+                                <span class="label label-success">{% trans 'Ready' %}</span>
+                            </td>
+                        {% else %}
+                            <td class="status warning">
+                                <span class="label label-warning">{% trans 'In progress' %}</span>
+                            </td>
+                        {% endif %}
+                    {% endif %}
+                </tr>
+            {% elif button == '/customers/archive/' and object.in_close_time >= 30 %}
                 <tr data-href="{{ object.get_absolute_url }}">
                     <td class="name">
                         {{ object }}
@@ -81,12 +98,6 @@
                             </td>
                         {% endif %}
                     {% endif %}
-                    <td>
-                        {{ object.time_close }}
-                    </td>
-                    <td>
-                        {{ object.in_close }}
-                    </td>
                 </tr>
             {% endif %}
         {% endfor %}

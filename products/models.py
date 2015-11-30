@@ -20,16 +20,13 @@ class AbstractNamedItem(models.Model):
 
 
 class HistoryURLMixin(object):
-
     def get_history_url(self):
         return reverse('admin:products_{model_name}_history'.format(
             model_name=self._meta.model_name
         ), args=[self.pk])
 
 
-
 class AbstractTreeItem(models.Model):
-
     def get_path(self):
         path = []
         current = self
@@ -45,7 +42,6 @@ class AbstractTreeItem(models.Model):
 
 
 class AbstractNamedTreeItem(AbstractNamedItem, AbstractTreeItem):
-
     class Meta:
         abstract = True
 
@@ -87,7 +83,6 @@ class Customer(AbstractNamedTreeItem, HistoryURLMixin):
     def is_closed(self):
         closed = self.box_set.filter(is_closed=True).count() == self.box_set.count()
         if closed:
-            time_close = self.time_close
             if not self.in_close:
                 self.time_close = datetime.now()
                 self.in_close = True
@@ -97,16 +92,15 @@ class Customer(AbstractNamedTreeItem, HistoryURLMixin):
 
         if self.in_close and self.in_close_time < 31:
             time_now = datetime.now().date()
-            time_close = (self.time_close).date()
+            time_close = self.time_close.date()
             delta = (time_now - time_close).days
             self.in_close_time = delta
             self.save()
-        else:
+        elif not self.in_close:
             self.in_close_time = 0
             self.save()
 
         return self.box_set.filter(is_closed=True).count() == self.box_set.count()
-
 
     def get_absolute_url(self):
         return reverse('box-list', kwargs={
