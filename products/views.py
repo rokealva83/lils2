@@ -128,10 +128,19 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
         return self.model._meta.verbose_name_plural.title()
 
     def get_queryset(self):
+        qs = super(BaseListView, self).get_queryset()
+        button = self.request.path
+        qs1 =[]
+        for q in qs:
+            if button == '/customers/' and q.in_close_time < 30:
+                qs1.append(q)
+            elif button == '/customers/archive/' and q.in_close_time >= 30:
+                qs1.append(q)
+        if qs1:
+            return qs1
+
         direct_parent = self.get_direct_parent()
-
         filter_kwargs = {}
-
         if direct_parent:
             filter_kwargs = {
                 'parent': direct_parent
@@ -139,10 +148,8 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
 
         return super().get_queryset().filter(**filter_kwargs)
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         context['header'] = self.get_header()
         context['paths'] = self.get_parents()
         context['create_url'] = self.get_create_url()
