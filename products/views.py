@@ -288,9 +288,12 @@ class BoxMixin(object):
 
 class BoxListView(BoxMixin, BaseListView):
     template_name = 'products/box_list.html'
-
     create_url = 'box-create'
+    ordering = 'name'
 
+    def get_queryset(self):
+        qs = super(BoxListView, self).get_queryset()
+        return qs
 
 class BoxCreateView(BoxMixin, BaseCreateView):
     pass
