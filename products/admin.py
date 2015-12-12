@@ -12,7 +12,6 @@ from .models import (
 
 
 class ProductResource(resources.ModelResource):
-
     class Meta:
         model = Product
 
@@ -20,7 +19,7 @@ class ProductResource(resources.ModelResource):
             'barcode',
             'order',
             'name',
-            'quantity'
+            'quantity',
         )
 
         export_order = (
@@ -45,7 +44,9 @@ class ProductImportExportAdmin(ImportExportModelAdmin):
         'name',
         'order',
         'quantity',
+
     )
+
 
 # class ProductAdmin(admin.ModelAdmin):
 
@@ -58,7 +59,6 @@ class ItemAdmin(admin.ModelAdmin):
 
 
 class ProductPurchaseAdmin(SimpleHistoryAdmin):
-
     list_display = (
         'name',
         'barcode',
@@ -67,14 +67,13 @@ class ProductPurchaseAdmin(SimpleHistoryAdmin):
     )
 
 
-
-
 class CustomerAdmin(SimpleHistoryAdmin):
     list_display = (
         'name',
         'invoice',
         'total_weight',
         'is_closed',
+        'time_close',
     )
 
 
@@ -84,10 +83,9 @@ class BoxAdmin(SimpleHistoryAdmin):
         'is_closed',
     )
 
+
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Box, BoxAdmin)
 admin.site.register(ProductPurchase, ProductPurchaseAdmin)
 
 admin.site.register(Product, ProductImportExportAdmin)
-
-

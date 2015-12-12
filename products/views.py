@@ -130,13 +130,13 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
     def get_queryset(self):
         qs = super(BaseListView, self).get_queryset()
         button = self.request.path
-        qs1 =[]
-        for q in qs:
-            if button == '/customers/' and q.in_close_time < 30:
-                qs1.append(q)
-            elif button == '/customers/archive/' and q.in_close_time >= 30:
-                qs1.append(q)
-        if qs1:
+        if button == '/customers/archive/' or button == '/customers/':
+            qs1 = []
+            for q in qs:
+                if button == '/customers/' and q.in_close_time < 30:
+                    qs1.append(q)
+                elif button == '/customers/archive/' and q.in_close_time >= 30:
+                    qs1.append(q)
             return qs1
 
         direct_parent = self.get_direct_parent()

@@ -49,13 +49,16 @@
             <td>
                 {% trans 'Status' %}
             </td>
+            <td>
+                {% trans 'Closing time' %}
+            </td>
         </tr>
         </thead>
         <tbody class="list">
         {% for object in object_list %}
                 <tr data-href="{{ object.get_absolute_url }}">
                     <td class="name">
-                        {{ object }}0
+                        {{ object }}
                     </td>
                     <td class="invoice">
                         {{ object.invoice }}
@@ -73,6 +76,15 @@
                                 <span class="label label-warning">{% trans 'In progress' %}</span>
                             </td>
                         {% endif %}
+                    {% endif %}
+                    {% if object.is_closed %}
+                        <td class="status success" style="width: 180px">
+                            {{ object.time_close }}
+                        </td>
+                    {% else %}
+                        <td class="status warning" style="width: 180px">
+                            -
+                        </td>
                     {% endif %}
                 </tr>
         {% endfor %}

@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
-from datetime import datetime
+import datetime
 
 from simple_history.models import HistoricalRecords
 
@@ -72,7 +72,7 @@ class Customer(AbstractNamedTreeItem, HistoryURLMixin):
     )
 
     time_close = models.DateTimeField(
-        default=datetime.now()
+        default=datetime.datetime.now()
     )
 
     in_close_time = models.IntegerField(
@@ -82,25 +82,26 @@ class Customer(AbstractNamedTreeItem, HistoryURLMixin):
     @property
     def is_closed(self):
         closed = self.box_set.filter(is_closed=True).count() == self.box_set.count()
-        if closed:
-            if not self.in_close:
-                self.time_close = datetime.now()
-                self.in_close = True
-        else:
-            self.in_close = False
-        self.save()
-
-        if self.in_close and self.in_close_time < 31:
-            time_now = datetime.now().date()
-            time_close = self.time_close.date()
-            delta = (time_now - time_close).days
-            self.in_close_time = delta
+        if closed and not self.in_close:
+            self.time_close = datetime.datetime.now()
+            self.in_close = True
             self.save()
-        elif not self.in_close:
+        elif self.in_close and not closed:
+            self.in_close = False
+            self.time_close = datetime.datetime.now()
             self.in_close_time = 0
             self.save()
+        if self.in_close and self.in_close_time < 31:
+            time_now = datetime.datetime.now().date()
+            time_close = self.time_close.date()
+            delta = (time_now - time_close).days
+            if delta != self.in_close_time:
+                self.in_close_time = delta
+                self.save()
+        elif not self.in_close:
+            self.in_close_time = 0
 
-        return self.box_set.filter(is_closed=True).count() == self.box_set.count()
+        return closed
 
     def get_absolute_url(self):
         return reverse('box-list', kwargs={
