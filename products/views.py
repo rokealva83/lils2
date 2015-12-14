@@ -66,6 +66,8 @@ from .utils import (
     FileResponseBuilder
 )
 
+from .models import Box
+
 
 class PKUrlKwargByModelMixin(object):
     def __new__(cls, *args, **kwargs):
@@ -295,6 +297,7 @@ class BoxListView(BoxMixin, BaseListView):
         qs = super(BoxListView, self).get_queryset()
         return qs
 
+
 class BoxCreateView(BoxMixin, BaseCreateView):
     pass
 
@@ -492,3 +495,9 @@ class LogsExportView(BaseLogsView,
         )
 
         return response_builder.build()
+
+
+def rename_box(request, box_pk, customer_pk):
+    if request.GET.get('new_name'):
+        Box.objects.filter(id=box_pk).update(name=request.GET.get('new_name'))
+    return HttpResponseRedirect('%s/customers/%s/boxes/%s/products/' % ('http://erp.supersprox.com', customer_pk, box_pk))

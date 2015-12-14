@@ -4,22 +4,23 @@
 {% load pipeline %}
 
 {% block toolbar %}
-    <a
-        id="close"
-        class="btn btn-{% if parent.is_closed %}warning{% else %}success{% endif %}"
-        href="{% url 'box-toggle-close' parent.pk %}"
-    >
-        <span
-            class="glyphicon glyphicon-{% if parent.is_closed %}share-alt{% else %}check{% endif %}"
-        >
-
-        </span>
-        {% if parent.is_closed %}
-            {% trans 'Reopen' %}
-        {% else %}
+    {% if user.is_superuser %}
+        <a id="close" class="btn btn-{% if parent.is_closed %}warning{% else %}success{% endif %}"
+            href="{% url 'box-toggle-close' parent.pk %}">
+            <span class="glyphicon glyphicon-{% if parent.is_closed %}share-alt{% else %}check{% endif %}"></span>
+            {% if parent.is_closed %}
+                {% trans 'Reopen' %}
+            {% else %}
+                {% trans 'Close' %}
+            {% endif %}
+        </a>
+    {% elif not user.is_superuser and not parent.is_closed %}
+        <a id="close" class="btn btn-success" href="{% url 'box-toggle-close' parent.pk %}">
+            <span class="glyphicon glyphicon-check"/> </span>
             {% trans 'Close' %}
-        {% endif %}
-    </a>
+        </a>
+    {% endif %}
+
     {% if object_list %}
         <a href="{{ parent.get_export_url }}" class="btn btn-info">
             <span class="glyphicon glyphicon-hdd"></span>

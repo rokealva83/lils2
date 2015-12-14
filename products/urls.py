@@ -26,6 +26,8 @@ from .views import (
     CustomerArchiveView,
 )
 
+from .views import rename_box
+
 urlpatterns = (
 
     url(
@@ -118,6 +120,7 @@ urlpatterns = (
         name='product-list'
     ),
 
+
     url(
         r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/(?P<productpurchase_pk>\d+)/delete/$',
         ProductDeleteView.as_view(),
@@ -129,6 +132,10 @@ urlpatterns = (
         ProductUpdateView.as_view(),
         name='product-update'
     ),
+
+    url(
+        r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/rename_box/$',
+        rename_box),
 
     url(
         r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/create/$',
