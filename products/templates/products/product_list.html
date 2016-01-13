@@ -4,7 +4,7 @@
 {% load pipeline %}
 
 {% block toolbar %}
-    {% if user.is_superuser %}
+    {% if user.is_superuser or user.is_staff%}
         <a id="close" class="btn btn-{% if parent.is_closed %}warning{% else %}success{% endif %}"
             href="{% url 'box-toggle-close' parent.pk %}">
             <span class="glyphicon glyphicon-{% if parent.is_closed %}share-alt{% else %}check{% endif %}"></span>
@@ -14,11 +14,13 @@
                 {% trans 'Close' %}
             {% endif %}
         </a>
-    {% elif not user.is_superuser and not parent.is_closed %}
+    {% elif not user.is_superuser or not user.is_staff %}
+        {% if not parent.is_closed %}
         <a id="close" class="btn btn-success" href="{% url 'box-toggle-close' parent.pk %}">
             <span class="glyphicon glyphicon-check"/> </span>
             {% trans 'Close' %}
         </a>
+            {% endif %}
     {% endif %}
 
     {% if object_list %}
