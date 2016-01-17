@@ -3,13 +3,11 @@
 {% load i18n %}
 
 {% block toolbar %}
-    {% if user.is_superusser or user.is_staff %}
-        {% if not parent.is_close %}
-            <a href="{% url 'customer-update' parent.pk %}" class="btn btn-default">
-                <span class="glyphicon glyphicon-pencil"></span>
-                {% trans 'Edit' %}
-            </a>
-        {% endif %}
+    {% if not parent.in_close or user.is_superuser%}
+        <a href="{% url 'customer-update' parent.pk %}" class="btn btn-default">
+            <span class="glyphicon glyphicon-pencil"></span>
+            {% trans 'Edit' %}
+        </a>
     {% endif %}
 
     <a href="{{ parent.get_export_url }}" class="btn btn-info">

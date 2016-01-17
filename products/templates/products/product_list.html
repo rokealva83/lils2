@@ -4,9 +4,9 @@
 {% load pipeline %}
 
 {% block toolbar %}
-    {% if user.is_superuser or user.is_staff%}
+    {% if user.is_superuser or user.is_staff %}
         <a id="close" class="btn btn-{% if parent.is_closed %}warning{% else %}success{% endif %}"
-            href="{% url 'box-toggle-close' parent.pk %}">
+           href="{% url 'box-toggle-close' parent.pk %}">
             <span class="glyphicon glyphicon-{% if parent.is_closed %}share-alt{% else %}check{% endif %}"></span>
             {% if parent.is_closed %}
                 {% trans 'Reopen' %}
@@ -16,11 +16,11 @@
         </a>
     {% elif not user.is_superuser or not user.is_staff %}
         {% if not parent.is_closed %}
-        <a id="close" class="btn btn-success" href="{% url 'box-toggle-close' parent.pk %}">
-            <span class="glyphicon glyphicon-check"/> </span>
-            {% trans 'Close' %}
-        </a>
-            {% endif %}
+            <a id="close" class="btn btn-success" href="{% url 'box-toggle-close' parent.pk %}">
+                <span class="glyphicon glyphicon-check"/> </span>
+                {% trans 'Close' %}
+            </a>
+        {% endif %}
     {% endif %}
 
     {% if object_list %}
@@ -36,23 +36,25 @@
 {% block list %}
     <table class="table">
         <thead>
-            <tr>
-                <td>{% trans 'Barcode' %}</td>
-                <td>{% trans 'Name' %}</td>
-                <td>{% trans 'Order' %}</td>
-                <td>{% trans 'Quantity' %}</td>
-                <td></td>
-            </tr>
+        <tr>
+            <td>{% trans 'Barcode' %}</td>
+            <td>{% trans 'Name' %}</td>
+            <td>{% trans 'Order' %}</td>
+            <td>{% trans 'Quantity' %}</td>
+            <td></td>
+        </tr>
         </thead>
         <tbody class="list">
-            {% for product in object_list %}
-                <tr>
-                    <td class="barcode">{{ product.barcode }}</td>
-                    <td class="name">{{ product.name }}</td>
-                    <td class="order">{{ product.order }}</td>
-                    <td class="quantity">{{ product.quantity }}</td>
+        {% for product in object_list %}
+            <tr>
+                <td class="barcode">{{ product.barcode }}</td>
+                <td class="name">{{ product.name }}</td>
+                <td class="order">{{ product.order }}</td>
+                <td class="quantity">{{ product.quantity }}</td>
 
-                    <td>
+                <td>
+                    <p>{% if not parent.is_closed  or user.is_superuser%}
+
                         {% if perms.products.change_productpurchase %}
                             <a href="{{ product.get_edit_url }}">
                                 <span class="glyphicon glyphicon-pencil"></span>
@@ -64,9 +66,10 @@
                                 <span class="glyphicon glyphicon-remove"></span>
                             </a>
                         {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
+                    {% endif %}</p>
+                </td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 {% endblock list %}
