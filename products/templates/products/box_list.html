@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block toolbar %}
-    {% if not parent.in_close or user.is_superuser%}
+    {% if user.is_staff or user.is_superuser%}
         <a href="{% url 'customer-update' parent.pk %}" class="btn btn-default">
             <span class="glyphicon glyphicon-pencil"></span>
             {% trans 'Edit' %}

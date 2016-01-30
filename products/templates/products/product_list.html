@@ -4,7 +4,14 @@
 {% load pipeline %}
 
 {% block toolbar %}
-    {% if user.is_superuser or user.is_staff %}
+    {% if user.is_superuser and not parent.is_closed %}
+        <a id="close" class="btn btn-success"
+           href="{% url 'box-toggle-close' parent.pk %}">
+            <span class="glyphicon glyphicon-check"></span>
+            {% trans 'Close' %}
+        </a>
+    {% elif user.is_staff %}
+
         <a id="close" class="btn btn-{% if parent.is_closed %}warning{% else %}success{% endif %}"
            href="{% url 'box-toggle-close' parent.pk %}">
             <span class="glyphicon glyphicon-{% if parent.is_closed %}share-alt{% else %}check{% endif %}"></span>
@@ -14,13 +21,6 @@
                 {% trans 'Close' %}
             {% endif %}
         </a>
-    {% elif not user.is_superuser or not user.is_staff %}
-        {% if not parent.is_closed %}
-            <a id="close" class="btn btn-success" href="{% url 'box-toggle-close' parent.pk %}">
-                <span class="glyphicon glyphicon-check"/> </span>
-                {% trans 'Close' %}
-            </a>
-        {% endif %}
     {% endif %}
 
     {% if object_list %}
@@ -53,15 +53,16 @@
                 <td class="quantity">{{ product.quantity }}</td>
 
                 <td>
-                    <p>{% if not parent.is_closed  or user.is_superuser%}
-
-                        {% if perms.products.change_productpurchase %}
-                            <a href="{{ product.get_edit_url }}">
-                                <span class="glyphicon glyphicon-pencil"></span>
-                            </a>
+                    <p>{% if not parent.is_closed %}
+                        {% if user.is_staff %}
+                            {% if perms.products.change_productpurchase %}
+                                <a href="{{ product.get_edit_url }}">
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                </a>
+                            {% endif %}
                         {% endif %}
 
-                        {% if user.is_superuser %}
+                        {% if user.is_staff %}
                             <a href="{{ product.get_delete_url }}">
                                 <span class="glyphicon glyphicon-remove"></span>
                             </a>

@@ -32,20 +32,22 @@
                         {% trans "Search" %}
                     </button>
                 {% endif %}
-                {% if user.is_superuser or user.is_staff or not parent.is_closed %}
-                    <a href="{{ create_url }}" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-plus"></span>
+                {% if user.is_superuser or user.is_staff %}
+                    {% if not parent.is_closed %}
+                        <a href="{{ create_url }}" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-plus"></span>
 
-                        {% trans 'New' %} {{ verbose_name }}
-                    </a>
+                            {% trans 'New' %} {{ verbose_name }}
+                        </a>
+                    {% endif %}
                 {% endif %}
-                {%  if button == '/customers/archive/' %}
+                {% if button == '/customers/archive/' %}
                     <a href="/customers/" class="btn btn-primary">
                         <span class="glyphicon"></span>
 
                         Customers
                     </a>
-                    {% else %}
+                {% else %}
                     {% if verbose_name == 'customer' %}
                         <a href="{{ archive_url }}" class="btn btn-info">
                             <span class="glyphicon"></span>
@@ -56,11 +58,11 @@
                     {% endif %}
                 {% endif %}
 
-                {% if user.is_superuser or user.is_staff and parent %}
-                    <a href="{{ parent.get_delete_url }}" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-remove"></span>
-                        {% trans 'Delete' %} <b>{{ parent }}</b>
-                    </a>
+                {% if user.is_staff %}
+                        <a href="{{ parent.get_delete_url }}" class="btn btn-danger">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            {% trans 'Delete' %} <b>{{ parent }}</b>
+                        </a>
                 {% endif %}
             {% endblock toolbar %}
         </div>
@@ -93,10 +95,10 @@
                 <div class="row">
                     <div class="col-md-7">
                         <input
-                            id="searchInput"
-                            type="text"
-                            class="form-control search"
-                            placeholder="Search for...">
+                                id="searchInput"
+                                type="text"
+                                class="form-control search"
+                                placeholder="Search for...">
                     </div>
                     <div class="col-md-5" id="col-selector">
                     </div>
@@ -129,7 +131,7 @@
             </center>
         {% endif %}
     </div>
-    {% if user.is_superuser or user.is_staff or not parent.is_closed %}
+    {% if user.is_staff or not parent.is_closed %}
         {% if verbose_name == 'product purchase' %}
             <div class="row">
                 <form class="form-horizontal" action="rename_box">
@@ -154,7 +156,7 @@
 
 
 {% block scripts %}
-    {{block.super}}
+    {{ block.super }}
 
     {% block list_js_options %}{% endblock list_js_options %}
 
