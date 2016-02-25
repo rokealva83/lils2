@@ -501,3 +501,56 @@ def rename_box(request, box_pk, customer_pk):
     if request.GET.get('new_name'):
         Box.objects.filter(id=box_pk).update(name=request.GET.get('new_name'))
     return HttpResponseRedirect('%s/customers/%s/boxes/%s/products/' % ('http://erp.supersprox.com', customer_pk, box_pk))
+
+
+from django import forms
+from django.shortcuts import render
+
+
+class UploadFileForm(forms.Form):
+    csv = forms.FileField()
+
+
+def import_file_page(request,customer_pk, box_pk):
+    url = '/customers/%s/boxes/%s/products/' % (customer_pk, box_pk)
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES.get('csv')
+            lines = file.readlines()
+            for l in lines:
+                values = str(l).split(',')
+                barcode = values[0].split('"')[1]
+                num = values[1]
+                order = values[2].split("'")[1]
+
+                product = Product.objects.filter(barcode=barcode).last()
+                if product:
+                    product_purchase = ProductPurchase.objects.filter(parent_id=box_pk, product=product).first()
+                    if not product_purchase:
+                        product_purchase = ProductPurchase(
+                            parent=Box.objects.get(id=box_pk),
+                            product=product,
+                            quantity_override=num,
+                            order_override=order
+                        )
+                        product_purchase.save()
+                else:
+                    product = Product(
+                        barcode=barcode,
+                        order=order,
+                        quantity=num
+                    )
+                    product.save()
+                    product_purchase = ProductPurchase(
+                        parent=Box.objects.get(id=box_pk),
+                        product=product,
+                        quantity_override=num,
+                        order_override=order
+                    )
+                    product_purchase.save()
+
+            return HttpResponseRedirect(url)
+    else:
+        form = UploadFileForm()
+    return render(request, 'products/import_product.html', {'form': form, 'url': url})

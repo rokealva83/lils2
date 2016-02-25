@@ -59,10 +59,10 @@
                 {% endif %}
 
                 {% if user.is_staff %}
-                        <a href="{{ parent.get_delete_url }}" class="btn btn-danger">
-                            <span class="glyphicon glyphicon-remove"></span>
-                            {% trans 'Delete' %} <b>{{ parent }}</b>
-                        </a>
+                    <a href="{{ parent.get_delete_url }}" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        {% trans 'Delete' %} <b>{{ parent }}</b>
+                    </a>
                 {% endif %}
             {% endblock toolbar %}
         </div>

@@ -26,7 +26,7 @@ from .views import (
     CustomerArchiveView,
 )
 
-from .views import rename_box
+from .views import rename_box, import_file_page
 
 urlpatterns = (
 
@@ -136,6 +136,10 @@ urlpatterns = (
     url(
         r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/rename_box/$',
         rename_box),
+
+    url(
+        r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/import_file_page/$',
+        import_file_page),
 
     url(
         r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/create/$',
