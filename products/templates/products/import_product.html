@@ -1,0 +1,49 @@
+{% extends 'products/base_create.html' %}
+
+{% load i18n %}
+{% load pipeline %}
+
+
+
+{% block content %}
+
+    {% block toolbar %}
+    <a href="{{ url }}" class="btn btn-default" style="float: right">
+        <span class="glyphicon glyphicon-arrow-left"></span>
+        {% trans 'Back' %}
+    </a>
+{% endblock toolbar %}
+    <form action="{{ object.get_edit_url }}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit" class="btn btn-primary" style="margin-top: 5px">Save</button>
+    </form>
+
+
+    {{ object }}
+    <style>
+        form label {
+            display: none;
+        }
+
+        form input {
+            padding: 10px 0 10px 0;
+            border-bottom: 1px #D0D0D0 solid;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        form button {
+            margin-top: 5px;
+            width: 150px;
+
+        }
+
+        form ul {
+            color: #680004;
+            font-size: 15px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
+{% endblock content %}
