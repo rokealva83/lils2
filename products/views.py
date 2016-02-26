@@ -520,9 +520,17 @@ def import_file_page(request,customer_pk, box_pk):
             lines = file.readlines()
             for l in lines:
                 values = str(l).split(',')
-                barcode = values[0].split('"')[1]
+                if len(values) <= 1:
+                    values = str(l).split(';')
+                barcode = values[0].split('"')
+                if len(barcode) <= 1:
+                    barcode = values[0].split("'")
+                barcode = barcode[1]
                 num = values[1]
-                order = values[2].split("'")[1]
+                try:
+                    order = values[2].split("\\")[0]
+                except:
+                    order = ''
 
                 product = Product.objects.filter(barcode=barcode).last()
                 if product:
@@ -535,6 +543,10 @@ def import_file_page(request,customer_pk, box_pk):
                             order_override=order
                         )
                         product_purchase.save()
+                    else:
+                        setattr(product_purchase, 'quantity_override', int(product_purchase.quantity_override)+int(num))
+                        product_purchase.save()
+
                 else:
                     product = Product(
                         barcode=barcode,

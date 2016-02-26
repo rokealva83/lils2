@@ -4,6 +4,13 @@
 {% load pipeline %}
 
 {% block toolbar %}
+        {% if user.is_superuser and not parent.is_closed %}
+        <a class="btn btn-primary" href="import_file_page/"><span class="glyphicon glyphicon-plus"></span>
+            {% trans 'Import' %}</a>
+    {% elif user.is_staff %}
+        <a class="btn btn-primary" href="import_file_page/"><span class="glyphicon glyphicon-plus"></span>
+            {% trans 'Import' %}</a>
+    {% endif %}
     {% if user.is_superuser and not parent.is_closed %}
         <a id="close" class="btn btn-success"
            href="{% url 'box-toggle-close' parent.pk %}">
