@@ -58,7 +58,7 @@
                     {% endif %}
                 {% endif %}
 
-                {% if user.is_staff %}
+                {% if user.is_staff  and not parent.is_closed %}
                     <a href="{{ parent.get_delete_url }}" class="btn btn-danger">
                         <span class="glyphicon glyphicon-remove"></span>
                         {% trans 'Delete' %} <b>{{ parent }}</b>

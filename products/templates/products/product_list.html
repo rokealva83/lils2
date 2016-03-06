@@ -60,7 +60,7 @@
                 <td class="quantity">{{ product.quantity }}</td>
 
                 <td>
-                    <p>{% if not parent.is_closed  or user.is_superuser%}
+                    <p>{% if not parent.is_closed or user.is_superuser%}
 
                         {% if perms.products.change_productpurchase %}
                             <a href="{{ product.get_edit_url }}">
