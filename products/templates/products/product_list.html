@@ -60,7 +60,7 @@
                 <td class="quantity">{{ product.quantity }}</td>
 
                 <td>
-                    <p>{% if not parent.is_closed or user.is_superuser%}
+                    <p>{% if not parent.is_closed%}
 
                         {% if perms.products.change_productpurchase %}
                             <a href="{{ product.get_edit_url }}">
@@ -68,7 +68,7 @@
                             </a>
                         {% endif %}
 
-                        {% if user.is_superuser %}
+                        {% if user.is_superuser or user.is_staff %}
                             <a href="{{ product.get_delete_url }}">
                                 <span class="glyphicon glyphicon-remove"></span>
                             </a>
