@@ -7,10 +7,7 @@ from simple_history.models import HistoricalRecords
 
 
 class AbstractNamedItem(models.Model):
-    name = models.CharField(
-        max_length=120,
-        verbose_name=_('name'),
-    )
+    name = models.CharField(max_length=120, verbose_name=_('name'), )
 
     def __str__(self):
         return self.name
@@ -21,9 +18,7 @@ class AbstractNamedItem(models.Model):
 
 class HistoryURLMixin(object):
     def get_history_url(self):
-        return reverse('admin:products_{model_name}_history'.format(
-            model_name=self._meta.model_name
-        ), args=[self.pk])
+        return reverse('admin:products_{model_name}_history'.format(model_name=self._meta.model_name), args=[self.pk])
 
 
 class AbstractTreeItem(models.Model):
@@ -47,37 +42,16 @@ class AbstractNamedTreeItem(AbstractNamedItem, AbstractTreeItem):
 
 
 class ChildMetaMixin(object):
-    unique_together = (
-        'name',
-        'parent',
-    )
+    unique_together = ('name', 'parent',)
 
 
 class Customer(AbstractNamedTreeItem, HistoryURLMixin):
     history = HistoricalRecords()
-
-    invoice = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-
-    total_weight = models.CharField(
-        blank=True,
-        null=True,
-        max_length=256,
-    )
-
-    in_close = models.BooleanField(
-        default=False
-    )
-
-    time_close = models.DateTimeField(
-        default=datetime.datetime.now()
-    )
-
-    in_close_time = models.IntegerField(
-        default=0
-    )
+    invoice = models.CharField(max_length=100, blank=True, )
+    total_weight = models.CharField(blank=True, null=True, max_length=256, )
+    in_close = models.BooleanField(default=False)
+    time_close = models.DateTimeField(default=datetime.datetime.now())
+    in_close_time = models.IntegerField(default=0)
 
     @property
     def is_closed(self):
@@ -104,19 +78,19 @@ class Customer(AbstractNamedTreeItem, HistoryURLMixin):
         return closed
 
     def get_absolute_url(self):
-        return reverse('box-list', kwargs={
-            'customer_pk': self.pk
-        })
+        return reverse('box-pallet', kwargs={'customer_pk': self.pk})
+
+    def get_box_url(self):
+        return reverse('box-list', kwargs={'customer_pk': self.pk})
+
+    def get_pallet_url(self):
+        return reverse('pallet-list', kwargs={'customer_pk': self.pk})
 
     def get_delete_url(self):
-        return reverse('customer-delete', kwargs={
-            'customer_pk': self.pk
-        })
+        return reverse('customer-delete', kwargs={'customer_pk': self.pk})
 
     def get_export_url(self):
-        return reverse('customer-export', kwargs={
-            'customer_pk': self.pk
-        })
+        return reverse('customer-export', kwargs={'customer_pk': self.pk})
 
     class Meta:
         verbose_name = _('customer')
@@ -125,32 +99,17 @@ class Customer(AbstractNamedTreeItem, HistoryURLMixin):
 
 class Box(AbstractNamedTreeItem, HistoryURLMixin):
     history = HistoricalRecords()
-
-    parent = models.ForeignKey(
-        Customer,
-        related_name='box_set',
-        verbose_name=_('customer')
-    )
-
+    parent = models.ForeignKey(Customer, related_name='box_set', verbose_name=_('customer'))
     is_closed = models.BooleanField(default=False)
 
     def get_absolute_url(self):
-        return reverse('product-list', kwargs={
-            'customer_pk': self.parent.pk,
-            'box_pk': self.pk
-        })
+        return reverse('product-list', kwargs={'customer_pk': self.parent.pk, 'box_pk': self.pk})
 
     def get_delete_url(self):
-        return reverse('box-delete', kwargs={
-            'customer_pk': self.parent.pk,
-            'box_pk': self.pk,
-        })
+        return reverse('box-delete', kwargs={'customer_pk': self.parent.pk, 'box_pk': self.pk, })
 
     def get_export_url(self):
-        return reverse('box-export', kwargs={
-            'customer_pk': self.parent.pk,
-            'box_pk': self.pk,
-        })
+        return reverse('box-export', kwargs={'customer_pk': self.parent.pk, 'box_pk': self.pk, })
 
     class Meta(ChildMetaMixin):
         verbose_name = _('box')
@@ -159,71 +118,30 @@ class Box(AbstractNamedTreeItem, HistoryURLMixin):
 
 class Product(AbstractNamedItem):
     history = HistoricalRecords()
-
-    barcode = models.CharField(
-        max_length=64,
-        verbose_name=_('barcode')
-    )
-
-    order = models.CharField(
-        max_length=120,
-        verbose_name=_('order')
-    )
-
-    quantity = models.PositiveIntegerField(
-        verbose_name=_('quantity')
-    )
+    barcode = models.CharField(max_length=64, verbose_name=_('barcode'))
+    order = models.CharField(max_length=120, verbose_name=_('order'))
+    quantity = models.PositiveIntegerField(verbose_name=_('quantity'))
 
     class Meta:
         verbose_name = _('product')
         verbose_name_plural = _('products')
-
-        unique_together = (
-            'name',
-            'barcode',
-            'order',
-        )
+        unique_together = ('name', 'barcode', 'order',)
 
 
 class ProductPurchase(AbstractTreeItem, HistoryURLMixin):
     history = HistoricalRecords()
-
-    parent = models.ForeignKey(
-        Box,
-        verbose_name=_('box')
-    )
-
-    product = models.ForeignKey(
-        Product,
-    )
-
-    quantity_override = models.PositiveIntegerField(
-        default=None,
-        null=True,
-        blank=True,
-        verbose_name=_('quantity')
-    )
-
-    order_override = models.CharField(
-        max_length=120,
-        verbose_name=_('order'),
-        blank=True,
-        null=True,
-    )
+    parent = models.ForeignKey(Box, verbose_name=_('box'))
+    product = models.ForeignKey(Product, )
+    quantity_override = models.PositiveIntegerField(default=None, null=True, blank=True, verbose_name=_('quantity'))
+    order_override = models.CharField(max_length=120, verbose_name=_('order'), blank=True, null=True, )
 
     def get_delete_url(self):
-        return reverse('product-delete', kwargs={
-            'customer_pk': self.parent.parent.pk,
-            'box_pk': self.parent.pk,
-            'productpurchase_pk': self.pk
-        })
+        return reverse('product-delete', kwargs={'customer_pk': self.parent.parent.pk, 'box_pk': self.parent.pk,
+                                                 'productpurchase_pk': self.pk})
 
     def get_edit_url(self):
-        return reverse('product-update', kwargs={
-            'customer_pk': self.parent.parent.pk,
-            'box_pk': self.parent.pk,
-            'productpurchase_pk': self.pk
-        })
+        return reverse('product-update', kwargs={'customer_pk': self.parent.parent.pk, 'box_pk': self.parent.pk,
+                                                 'productpurchase_pk': self.pk})
 
     @property
     def name(self):
@@ -255,14 +173,81 @@ class ProductPurchase(AbstractTreeItem, HistoryURLMixin):
     class Meta:
         verbose_name = _('product purchase')
         verbose_name_plural = _('product purchases')
+        unique_together = ('product', 'parent')
 
-        unique_together = (
-            'product',
-            'parent'
-        )
+class Pallet(AbstractNamedTreeItem, HistoryURLMixin):
+    history = HistoricalRecords()
+    parent = models.ForeignKey(Customer, related_name='pallet_set', verbose_name=_('customer'))
+    is_closed = models.BooleanField(default=False)
+
+    def get_absolute_url(self):
+        return reverse('pallet-purchase-list', kwargs={'customer_pk': self.parent.pk, 'pallet_pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse('pallet-delete', kwargs={'customer_pk': self.parent.pk, 'pallet_pk': self.pk, })
+
+    def get_export_url(self):
+        return reverse('pallet-export', kwargs={'customer_pk': self.parent.pk, 'pallet_pk': self.pk, })
+
+    class Meta(ChildMetaMixin):
+        verbose_name = _('pallet')
+        verbose_name_plural = _('pallets')
 
 
-PRIORITY = (
-    Customer,
-    Box,
-)
+
+class PalletPurchase(AbstractTreeItem, HistoryURLMixin):
+    history = HistoricalRecords()
+    parent = models.ForeignKey(Pallet, verbose_name=_('pallet'))
+    box = models.ForeignKey(Box, verbose_name=_('box'))
+    product = models.ForeignKey(Product, )
+    quantity_override = models.PositiveIntegerField(default=None, null=True, blank=True, verbose_name=_('quantity'))
+    order_override = models.CharField(max_length=120, verbose_name=_('order'), blank=True, null=True, )
+
+    def get_delete_url(self):
+        return reverse('pallet-purchase-delete',
+                       kwargs={'customer_pk': self.parent.parent.pk, 'pallet_pk': self.parent.pk,
+                               'palletpurchase_pk': self.pk})
+
+    def get_edit_url(self):
+        return reverse('pallet-purchase-update',
+                       kwargs={'customer_pk': self.parent.parent.pk, 'pallet_pk': self.parent.pk,
+                               'palletpurchase_pk': self.pk})
+
+    # @property
+    # def name(self):
+    #     return self.pallet.name
+    #
+    # @property
+    # def barcode(self):
+    #     return self.product.barcode
+
+    # @property
+    # def box(self):
+    #     return self.box
+
+    # @property
+    # def order(self):
+    #     return self.product.order if self.order_override is None else self.order_override
+    #
+    # @order.setter
+    # def order(self, value):
+    #     self.order_override = value
+    #
+    # @property
+    # def quantity(self):
+    #     return self.product.quantity if self.quantity_override is None else self.quantity_override
+    #
+    # @quantity.setter
+    # def quantity(self, value):
+    #     self.quantity_override = value
+
+    def __str__(self):
+        return str(self.product)
+
+    class Meta:
+        verbose_name = _('pallet purchase')
+        verbose_name_plural = _('pallet purchases')
+        unique_together = ('parent',)
+
+
+PRIORITY = (Customer, Box, PalletPurchase, Pallet, )

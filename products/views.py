@@ -51,6 +51,8 @@ from .models import (
     Box,
     ProductPurchase,
     Product,
+    Pallet,
+    PalletPurchase,
 
     PRIORITY
 )
@@ -72,34 +74,18 @@ from .models import Box
 class PKUrlKwargByModelMixin(object):
     def __new__(cls, *args, **kwargs):
         new_cls = super().__new__(cls, *args, **kwargs)
-
-        setattr(
-            new_cls,
-            'pk_url_kwarg',
-            '{}_pk'.format(cls.model._meta.model_name)
-        )
-
+        setattr(new_cls, 'pk_url_kwarg', '{}_pk'.format(cls.model._meta.model_name))
         return new_cls
 
 
 class BaseView(object):
     def get_parents(self):
         parents_list = []
-
         for model_name, model, pk in self._get_models_by_pk():
-            parents_list.append({
-                'model_name': model_name,
-                'instacnce': get_object_or_404(model, pk=pk),
-                'priority': PRIORITY.index(model)
-            })
-
+             parents_list.append({'model_name': model_name, 'instacnce': get_object_or_404(model, pk=pk),
+                                 'priority': PRIORITY.index(model)})
         parents_list.sort(key=lambda i: i['priority'])
-
-        parents = OrderedDict(
-            (parent['model_name'], parent['instacnce'])
-            for parent in parents_list
-        )
-
+        parents = OrderedDict((parent['model_name'], parent['instacnce']) for parent in parents_list)
         return parents
 
     def _get_models_by_pk(self):
@@ -127,6 +113,7 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
         return reverse(self.archive_url, kwargs=self.kwargs)
 
     def get_header(self):
+
         return self.model._meta.verbose_name_plural.title()
 
     def get_queryset(self):
@@ -140,13 +127,16 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
                 elif button == '/customers/archive/' and q.in_close_time >= 30:
                     qs1.append(q)
             return qs1
-
+        if self.request.path == '/customers/%s/' % self.kwargs.get('customer_pk'):
+            qs1 = []
+            for q in qs:
+                if q.id == int(self.kwargs.get('customer_pk')):
+                    qs1.append(q)
+            return qs1
         direct_parent = self.get_direct_parent()
         filter_kwargs = {}
         if direct_parent:
-            filter_kwargs = {
-                'parent': direct_parent
-            }
+            filter_kwargs = {'parent': direct_parent}
 
         return super().get_queryset().filter(**filter_kwargs)
 
@@ -154,13 +144,14 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
         context = super().get_context_data(**kwargs)
         context['header'] = self.get_header()
         context['paths'] = self.get_parents()
-        context['create_url'] = self.get_create_url()
-        if self.get_header() == 'Customers':
-            context['archive_url'] = self.get_archive_url()
-            if self.request.path:
-                context['button'] = self.request.path
-            else:
-                context['button'] = '/customers/'
+        if self.request.path != '/customers/%s/' % self.kwargs.get('customer_pk'):
+            context['create_url'] = self.get_create_url()
+            if self.get_header() == 'Customers':
+                context['archive_url'] = self.get_archive_url()
+                if self.request.path:
+                    context['button'] = self.request.path
+                else:
+                    context['button'] = '/customers/'
         context['verbose_name'] = self.model._meta.verbose_name
 
         if hasattr(self.model, 'parent'):
@@ -170,10 +161,7 @@ class BaseListView(LoginRequiredMixin, BaseView, ListView):
         return context
 
 
-class BaseExportView(PKUrlKwargByModelMixin,
-                     SingleObjectMixin,
-                     BaseView,
-                     View):
+class BaseExportView(PKUrlKwargByModelMixin, SingleObjectMixin, BaseView, View):
     def get_exporter(self):
         return get_exporter(self.model)
 
@@ -183,12 +171,8 @@ class BaseExportView(PKUrlKwargByModelMixin,
 
         object_exported = exporter.export(object)
 
-        response = HttpResponse(
-            content=object_exported,
-            content_type=exporter.content_type,
-        )
-        response['Content-Disposition'] = \
-            'attachment; filename="{}.xlsx"'.format(object)
+        response = HttpResponse(content=object_exported, content_type=exporter.content_type, )
+        response['Content-Disposition'] = 'attachment; filename="{}.xlsx"'.format(object)
         response['Content-Length'] = len(object_exported)
 
         return response
@@ -197,31 +181,20 @@ class BaseExportView(PKUrlKwargByModelMixin,
 class BaseCreateView(LoginRequiredMixin, BaseView, CreateView):
     template_name = 'products/base_create.html'
 
-    fields = (
-        'name',
-    )
+    fields = ('name',)
 
     def form_valid(self, form):
         item = form.save(commit=False)
-
         item.parent = self.get_direct_parent()
         item.save()
-
-        messages.success(
-            self.request,
-            _('{type} <b>{name}</b> was successeful created!').format(
-                type=item._meta.verbose_name.title(),
-                name=str(item)
-            )
-        )
-
+        messages.success(self.request,
+                         _('{type} <b>{name}</b> was successeful created!').format(type=item._meta.verbose_name.title(),
+                                                                                   name=str(item)))
         return super().form_valid(form)
 
     def get(self, request, *args, **kwargs):
         request = super().get(request, *args, **kwargs)
-
         self.check()
-
         return request
 
     def get_context_data(self, **kwargs):
@@ -230,10 +203,7 @@ class BaseCreateView(LoginRequiredMixin, BaseView, CreateView):
         return context
 
 
-class BaseDeleteView(SuperuserRequiredMixin,
-                     PKUrlKwargByModelMixin,
-                     BaseView,
-                     DeleteView):
+class BaseDeleteView(SuperuserRequiredMixin, PKUrlKwargByModelMixin, BaseView, DeleteView):
     template_name = 'products/base_confirm_delete.html'
 
 
@@ -250,14 +220,13 @@ class CustomerListView(CustomerMixin, BaseListView):
     template_name = 'products/customer_list.html'
 
 
+class BoxPalletListView(CustomerMixin, BaseListView):
+    template_name = 'products/customer_button_list.html'
+    create_url = 'customer-create'
+    archive_url = 'customer-archive'
+
 class CustomerCreateView(CustomerMixin, BaseCreateView):
-    fields = (
-        'name',
-        'invoice',
-        'total_weight',
-        'in_close',
-        'time_close',
-    )
+    fields = ('name', 'invoice', 'total_weight', 'in_close', 'time_close',)
 
 
 class CustomerArchiveView(CustomerMixin, BaseListView):
@@ -275,10 +244,7 @@ class CustomerExportView(CustomerMixin, BaseExportView):
 
 
 class CustomerUpdateView(CustomerMixin, UpdateView):
-    fields = (
-        'invoice',
-        'total_weight',
-    )
+    fields = ('invoice', 'total_weight',)
 
 
 # Box
@@ -314,21 +280,12 @@ class BoxExportView(BoxMixin, BaseExportView):
 class BoxToggleCloseView(LoginRequiredMixin, BoxMixin, SingleObjectMixin, View):
     def get(self, request, *args, **kwargs):
         box = self.get_object()
-
         box.is_closed = not box.is_closed
         box.save()
-
         if box.is_closed:
-            messages.success(
-                request,
-                _('Now <b>{}</b> is <b>Closed</b>').format(str(box).title())
-            )
+            messages.success(request, _('Now <b>{}</b> is <b>Closed</b>').format(str(box).title()))
         else:
-            messages.success(
-                request,
-                _('Now <b>{}</b> is <b>Open</b>').format(str(box).title())
-            )
-
+            messages.success(request, _('Now <b>{}</b> is <b>Open</b>').format(str(box).title()))
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -339,33 +296,20 @@ class ProductMixin(object):
     model = ProductPurchase
 
 
-class ProductUpdateView(
-    PKUrlKwargByModelMixin,
-    PermissionRequiredMixin,
-    ProductMixin,
-    UpdateView):
+class ProductUpdateView(PKUrlKwargByModelMixin, PermissionRequiredMixin, ProductMixin, UpdateView):
     permission_required = 'products.change_productpurchase'
 
     def get_success_url(self):
         object = self.get_object()
 
-        return reverse('product-list', kwargs={
-            'customer_pk': object.parent.parent.pk,
-            'box_pk': object.parent.pk,
-        })
+        return reverse('product-list', kwargs={'customer_pk': object.parent.parent.pk, 'box_pk': object.parent.pk, })
 
     def get_initial(self):
         object = self.get_object()
 
-        return {
-            'order_override': object.order,
-            'quantity_override': object.quantity
-        }
+        return {'order_override': object.order, 'quantity_override': object.quantity}
 
-    fields = (
-        'order_override',
-        'quantity_override',
-    )
+    fields = ('order_override', 'quantity_override',)
 
 
 class ProductListView(ProductMixin, BaseListView):
@@ -392,33 +336,20 @@ class AjaxableResponseMixin(object):
         # call form.save() for example).
         response = super(AjaxableResponseMixin, self).form_valid(form)
         if self.request.is_ajax():
-            data = {
-                'pk': self.object.pk,
-            }
+            data = {'pk': self.object.pk, }
             return JsonResponse(data)
         else:
             return response
 
 
-class ProductCreateView(ProductMixin,
-                        CsrfExemptMixin,
-                        AjaxableResponseMixin,
-                        BaseCreateView):
-    fields = (
-        'product',
-        'quantity_override',
-    )
+class ProductCreateView(ProductMixin, CsrfExemptMixin, AjaxableResponseMixin, BaseCreateView):
+    fields = ('product', 'quantity_override',)
 
     template_name = 'products/create_purchase.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['previous_page'] = reverse(
-            'product-list',
-            kwargs=self.kwargs
-        )
-
+        context['previous_page'] = reverse('product-list', kwargs=self.kwargs)
         return context
 
     def get_success_url(self):
@@ -432,50 +363,31 @@ class ProductDeleteView(ProductMixin, BaseDeleteView):
 
 class ProductSearchView(ProductMixin, LoginRequiredMixin, View):
     def serialize_product(self, product):
-        return {
-            'id': product.pk,
-            'barcode': product.barcode,
-            'order': product.order,
-            'name': product.name,
-            'quantity': product.quantity,
-        }
+        return {'id': product.pk, 'barcode': product.barcode, 'order': product.order, 'name': product.name,
+                'quantity': product.quantity, }
 
     def get(self, request, *args, **kwargs):
         barcode = kwargs.get('barcode')
-
         if barcode is not None:
-            products = [
-                self.serialize_product(p)
-                for p in Product.objects.filter(barcode=barcode)
-                ]
-
+            products = [self.serialize_product(p) for p in Product.objects.filter(barcode=barcode)]
             return JsonResponse(products, safe=False)
 
 
 class BaseLogsView(SuperuserRequiredMixin):
-    models_with_history = (
-        Customer,
-        Box,
-        ProductPurchase
-    )
+    models_with_history = (Customer, Box, ProductPurchase)
 
 
-class LogsView(BaseLogsView,
-               TemplateView):
+class LogsView(BaseLogsView, TemplateView):
     template_name = 'products/logs.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         collect_logs_service = CollectLogsService(self.models_with_history)
-
         context['logs'] = collect_logs_service.process()
-
         return context
 
 
-class LogsExportView(BaseLogsView,
-                     View):
+class LogsExportView(BaseLogsView, View):
     CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
     FILENAME = 'logs.xlsx'
@@ -483,16 +395,10 @@ class LogsExportView(BaseLogsView,
     def get(self, request, *args, **kwargs):
         collect_logs_service = CollectLogsService(self.models_with_history)
         logs = collect_logs_service.process()
-
         export_logs_service = ExportLogsService(logs)
         raw_data = export_logs_service.process()
-
-        response_builder = FileResponseBuilder(
-            response_class=HttpResponse,
-            content=raw_data,
-            content_type=self.CONTENT_TYPE,
-            filename=self.FILENAME,
-        )
+        response_builder = FileResponseBuilder(response_class=HttpResponse, content=raw_data,
+                                               content_type=self.CONTENT_TYPE, filename=self.FILENAME, )
 
         return response_builder.build()
 
@@ -500,7 +406,8 @@ class LogsExportView(BaseLogsView,
 def rename_box(request, box_pk, customer_pk):
     if request.GET.get('new_name'):
         Box.objects.filter(id=box_pk).update(name=request.GET.get('new_name'))
-    return HttpResponseRedirect('%s/customers/%s/boxes/%s/products/' % ('http://erp.supersprox.com', customer_pk, box_pk))
+    return HttpResponseRedirect(
+        '%s/customers/%s/boxes/%s/products/' % ('http://erp.supersprox.com', customer_pk, box_pk))
 
 
 from django import forms
@@ -511,9 +418,18 @@ class UploadFileForm(forms.Form):
     csv = forms.FileField()
 
 
-def import_file_page(request,customer_pk, box_pk):
-    url = '/customers/%s/boxes/%s/products/' % (customer_pk, box_pk)
-    if request.method == 'POST':
+def import_file_page(request, customer_pk, **box_pk):
+    box = pallet = False
+    if box_pk.get('box_pk'):
+        url = '/customers/%s/boxes/%s/products/' % (customer_pk, box_pk.get('box_pk'))
+        box = True
+    elif box_pk.get('pallet_pk'):
+        url = '/customers/%s/pallets/%s/pallet_purchase/' % (customer_pk, box_pk.get('pallet_pk'))
+        pallet = True
+    else:
+        url = '/customers/'
+
+    if request.method == 'POST' and box:
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file = request.FILES.get('csv')
@@ -537,14 +453,15 @@ def import_file_page(request,customer_pk, box_pk):
                     product_purchase = ProductPurchase.objects.filter(parent_id=box_pk, product=product).first()
                     if not product_purchase:
                         product_purchase = ProductPurchase(
-                            parent=Box.objects.get(id=box_pk),
+                            parent=Box.objects.get(id=box_pk.get('box_pk')),
                             product=product,
                             quantity_override=num,
                             order_override=order
                         )
                         product_purchase.save()
                     else:
-                        setattr(product_purchase, 'quantity_override', int(product_purchase.quantity_override)+int(num))
+                        setattr(product_purchase, 'quantity_override',
+                                int(product_purchase.quantity_override) + int(num))
                         product_purchase.save()
 
                 else:
@@ -555,7 +472,7 @@ def import_file_page(request,customer_pk, box_pk):
                     )
                     product.save()
                     product_purchase = ProductPurchase(
-                        parent=Box.objects.get(id=box_pk),
+                        parent=Box.objects.get(id=box_pk.get('box_pk')),
                         product=product,
                         quantity_override=num,
                         order_override=order
@@ -563,6 +480,120 @@ def import_file_page(request,customer_pk, box_pk):
                     product_purchase.save()
 
             return HttpResponseRedirect(url)
+    elif request.method == 'POST' and pallet:
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES.get('csv')
+            lines = file.readlines()
+            for l in lines:
+                values = str(l).split(',')
+                if len(values) <= 1:
+                    values = str(l).split(';')
+                barcode = values[0].split('"')
+                if len(barcode) <= 1:
+                    barcode = values[0].split("'")
+                barcode = barcode[1]
+                num = int(values[1])
+                box_id = int(values[2])
+                try:
+                    order = values[3].split("\\")[0]
+                except:
+                    order = ''
+                try:
+                    box = Box.objects.get(id=box_id)
+                    product_purchases = ProductPurchase.objects.filter(parent=box).all()
+                    for product_purchase in product_purchases:
+                        if product_purchase.product.barcode == barcode:
+                            pallet_product_purchase = PalletPurchase(
+                                parent=Pallet.objects.get(id=box_pk.get('pallet_pk')),
+                                box=box,
+                                product=product_purchase.product,
+                                quantity_override=num,
+                                order_override=order
+                                )
+                            pallet_product_purchase.save()
+                except:
+                    pass
+
+            return HttpResponseRedirect(url)
     else:
         form = UploadFileForm()
     return render(request, 'products/import_product.html', {'form': form, 'url': url})
+
+
+class PalletMixin(object):
+    model = Pallet
+
+
+class PalletListView(PalletMixin, BaseListView):
+    template_name = 'products/pallet_list.html'
+    create_url = 'pallet-create'
+
+    def get_queryset(self):
+        qs = super(PalletListView, self).get_queryset()
+        return qs
+
+
+class PalletCreateView(PalletMixin, BaseCreateView):
+    pass
+
+
+class PalletDeleteView(PalletMixin, BaseDeleteView):
+    def get_success_url(self):
+        return self.get_object().parent.get_absolute_url()
+
+
+class PalletExportView(PalletMixin, BaseExportView):
+    pass
+
+
+class PalletToggleCloseView(LoginRequiredMixin, PalletMixin, SingleObjectMixin, View):
+    def get(self, request, *args, **kwargs):
+        box = self.get_object()
+        box.is_closed = not box.is_closed
+        box.save()
+        if box.is_closed:
+            messages.success(request, _('Now <b>{}</b> is <b>Closed</b>').format(str(box).title()))
+        else:
+            messages.success(request, _('Now <b>{}</b> is <b>Open</b>').format(str(box).title()))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class PalletPurchaseMixin(object):
+    model = PalletPurchase
+
+
+class PalletPurchaseUpdateView(PKUrlKwargByModelMixin, PermissionRequiredMixin, PalletPurchaseMixin, UpdateView):
+    permission_required = 'products.change_pa;;etpurchase'
+
+    def get_success_url(self):
+        object = self.get_object()
+
+        return reverse('pallet-purchase-list',
+                       kwargs={'customer_pk': object.parent.parent.pk, 'pallet_pk': object.parent.pk, })
+
+    def get_initial(self):
+        object = self.get_object()
+
+        return {'order_override': object.order, 'quantity_override': object.quantity}
+
+    fields = ('order_override', 'quantity_override',)
+
+
+class PalletPurchaseListView(PalletPurchaseMixin, BaseListView):
+    create_url = 'pallet-purchase-create'
+    template_name = 'products/pallet_box_list.html'
+
+
+class PalletPurchaseCreateView(PalletPurchaseMixin, CsrfExemptMixin, AjaxableResponseMixin, BaseCreateView):
+    fields = ('parent', 'product',)
+
+    template_name = 'products/create_pallet_purchase.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['previous_page'] = reverse('pallet-purchase-list', kwargs=self.kwargs)
+        return context
+
+    def get_success_url(self):
+        return reverse('pallet-purchase-list', kwargs=self.kwargs)

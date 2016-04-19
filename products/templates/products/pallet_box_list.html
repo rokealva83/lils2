@@ -30,12 +30,12 @@
         </a>
     {% endif %}
 
-    {% if object_list %}
-        <a href="{{ parent.get_export_url }}" class="btn btn-info">
-            <span class="glyphicon glyphicon-hdd"></span>
-            {% trans 'Save as XLSX' %}
-        </a>
-    {% endif %}
+{#    {% if object_list %}#}
+{#        <a href="{{ parent.get_export_url }}" class="btn btn-info">#}
+{#            <span class="glyphicon glyphicon-hdd"></span>#}
+{#            {% trans 'Save as XLSX' %}#}
+{#        </a>#}
+{#    {% endif %}#}
 
     {{ block.super }}
 {% endblock toolbar %}
@@ -46,32 +46,19 @@
         <tr>
             <td>{% trans 'Barcode' %}</td>
             <td>{% trans 'Name' %}</td>
+            <td>{% trans 'Box' %}</td>
             <td>{% trans 'Order' %}</td>
             <td>{% trans 'Quantity' %}</td>
-            <td></td>
         </tr>
         </thead>
         <tbody class="list">
-        {% for product in object_list %}
+        {% for pallet in object_list %}
             <tr>
-                <td class="barcode">{{ product.barcode }}</td>
-                <td class="name">{{ product.name }}</td>
-                <td class="order">{{ product.order }}</td>
-                <td class="quantity">{{ product.quantity }}</td>
-
-                <td>
-                    <p>{% if not parent.is_closed%}
-                            <a href="{{ product.get_edit_url }}">
-                                <span class="glyphicon glyphicon-pencil"></span>
-                            </a>
-
-                        {% if user.is_superuser or user.is_staff %}
-                            <a href="{{ product.get_delete_url }}">
-                                <span class="glyphicon glyphicon-remove"></span>
-                            </a>
-                        {% endif %}
-                    {% endif %}</p>
-                </td>
+                <td class="barcode">{{ pallet.product.barcode }}</td>
+                <td class="name">{{ pallet.product.name }}</td>
+                <td class="name">{{ pallet.box.name }}</td>
+                <td class="order">{{ pallet.product.order }}</td>
+                <td class="quantity">{{ pallet.product.quantity }}</td>
             </tr>
         {% endfor %}
         </tbody>

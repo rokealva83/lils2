@@ -1613,6 +1613,8 @@
       <exported-key name="django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id" table="django_admin_log" schema="public" catalog="lils" columns="user_id"/>
       <exported-key name="products_histo_history_user_id_518222010f19f168_fk_auth_user_id" table="products_historicalbox" schema="public" catalog="lils" columns="history_user_id"/>
       <exported-key name="products_histo_history_user_id_30101eb4d7978a70_fk_auth_user_id" table="products_historicalcustomer" schema="public" catalog="lils" columns="history_user_id"/>
+      <exported-key name="products_histo_history_user_id_79e8c6457166f087_fk_auth_user_id" table="products_historicalpallet" schema="public" catalog="lils" columns="history_user_id"/>
+      <exported-key name="products_histo_history_user_id_357b55c18e1e5fdd_fk_auth_user_id" table="products_historicalpalletpurchase" schema="public" catalog="lils" columns="history_user_id"/>
       <exported-key name="products_histo_history_user_id_19d9ab2180805d5a_fk_auth_user_id" table="products_historicalproduct" schema="public" catalog="lils" columns="history_user_id"/>
       <exported-key name="products_histo_history_user_id_3729773cc4abc217_fk_auth_user_id" table="products_historicalproductpurchase" schema="public" catalog="lils" columns="history_user_id"/>
       <index name="auth_user_username_key" unique="true" columns="username"/>
@@ -1776,6 +1778,7 @@
       <column name="parent_id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
       <primary-key name="products_box_pkey" columns="id"/>
       <foreign-key name="products_box_parent_id_27f16af46447655a_fk_products_customer_id" columns="parent_id" ref-table="products_customer" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <exported-key name="products_palletpurch_box_id_4d4f0948ae8f4aeb_fk_products_box_id" table="products_palletpurchase" schema="public" catalog="lils" columns="box_id"/>
       <exported-key name="products_productp_parent_id_6a9b7ff3011ed0fd_fk_products_box_id" table="products_productpurchase" schema="public" catalog="lils" columns="parent_id"/>
       <index name="products_box_name_5cd0b652b305191c_uniq" unique="true" columns="name,parent_id"/>
       <index name="products_box_6be37982" unique="false" columns="parent_id"/>
@@ -1802,6 +1805,7 @@
       <column name="in_close_time" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
       <primary-key name="products_customer_pkey" columns="id"/>
       <exported-key name="products_box_parent_id_27f16af46447655a_fk_products_customer_id" table="products_box" schema="public" catalog="lils" columns="parent_id"/>
+      <exported-key name="products_pal_parent_id_7f8338005652c3b3_fk_products_customer_id" table="products_pallet" schema="public" catalog="lils" columns="parent_id"/>
     </table>
     <table name="products_customer_id_seq" schema="public" catalog="lils" type="SEQUENCE">
       <column name="sequence_name" sqlType="name" precision="2147483647" scale="0" nullable="false" jdbcType="12"/>
@@ -1871,6 +1875,64 @@
       <column name="is_cycled" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
       <column name="is_called" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
     </table>
+    <table name="products_historicalpallet" schema="public" catalog="lils" type="TABLE">
+      <column name="id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="name" sqlType="varchar" precision="120" scale="0" nullable="false" jdbcType="12"/>
+      <column name="is_closed" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+      <column name="history_id" sqlType="serial" precision="10" scale="0" nullable="false" jdbcType="4" def="bmV4dHZhbCgncHJvZHVjdHNfaGlzdG9yaWNhbHBhbGxldF9oaXN0b3J5X2lkX3NlcSc6OnJlZ2NsYXNzKQ==" autoIncrement="true"/>
+      <column name="history_date" sqlType="timestamptz" precision="35" scale="6" nullable="false" jdbcType="93"/>
+      <column name="history_type" sqlType="varchar" precision="1" scale="0" nullable="false" jdbcType="12"/>
+      <column name="history_user_id" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <column name="parent_id" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <primary-key name="products_historicalpallet_pkey" columns="history_id"/>
+      <foreign-key name="products_histo_history_user_id_79e8c6457166f087_fk_auth_user_id" columns="history_user_id" ref-table="auth_user" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <index name="products_historicalpallet_6be37982" unique="false" columns="parent_id"/>
+      <index name="products_historicalpallet_b80bb774" unique="false" columns="id"/>
+      <index name="products_historicalpallet_e7d5ef68" unique="false" columns="history_user_id"/>
+    </table>
+    <table name="products_historicalpallet_history_id_seq" schema="public" catalog="lils" type="SEQUENCE">
+      <column name="sequence_name" sqlType="name" precision="2147483647" scale="0" nullable="false" jdbcType="12"/>
+      <column name="last_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="start_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="increment_by" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="max_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="min_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="cache_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="log_cnt" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="is_cycled" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+      <column name="is_called" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+    </table>
+    <table name="products_historicalpalletpurchase" schema="public" catalog="lils" type="TABLE">
+      <column name="id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="quantity_override" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <column name="order_override" sqlType="varchar" precision="120" scale="0" nullable="true" jdbcType="12"/>
+      <column name="history_id" sqlType="serial" precision="10" scale="0" nullable="false" jdbcType="4" def="bmV4dHZhbCgncHJvZHVjdHNfaGlzdG9yaWNhbHBhbGxldHB1cmNoYXNlX2hpc3RvcnlfaWRfc2VxJzo6cmVnY2xhc3Mp" autoIncrement="true"/>
+      <column name="history_date" sqlType="timestamptz" precision="35" scale="6" nullable="false" jdbcType="93"/>
+      <column name="history_type" sqlType="varchar" precision="1" scale="0" nullable="false" jdbcType="12"/>
+      <column name="box_id" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <column name="history_user_id" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <column name="parent_id" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <column name="product_id" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <primary-key name="products_historicalpalletpurchase_pkey" columns="history_id"/>
+      <foreign-key name="products_histo_history_user_id_357b55c18e1e5fdd_fk_auth_user_id" columns="history_user_id" ref-table="auth_user" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <index name="products_historicalpalletpurchase_6be37982" unique="false" columns="parent_id"/>
+      <index name="products_historicalpalletpurchase_9bea82de" unique="false" columns="product_id"/>
+      <index name="products_historicalpalletpurchase_b80bb774" unique="false" columns="id"/>
+      <index name="products_historicalpalletpurchase_d5c14c0d" unique="false" columns="box_id"/>
+      <index name="products_historicalpalletpurchase_e7d5ef68" unique="false" columns="history_user_id"/>
+    </table>
+    <table name="products_historicalpalletpurchase_history_id_seq" schema="public" catalog="lils" type="SEQUENCE">
+      <column name="sequence_name" sqlType="name" precision="2147483647" scale="0" nullable="false" jdbcType="12"/>
+      <column name="last_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="start_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="increment_by" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="max_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="min_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="cache_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="log_cnt" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="is_cycled" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+      <column name="is_called" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+    </table>
     <table name="products_historicalproduct" schema="public" catalog="lils" type="TABLE">
       <column name="id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
       <column name="name" sqlType="varchar" precision="120" scale="0" nullable="false" jdbcType="12"/>
@@ -1927,6 +1989,57 @@
       <column name="is_cycled" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
       <column name="is_called" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
     </table>
+    <table name="products_pallet" schema="public" catalog="lils" type="TABLE">
+      <column name="id" sqlType="serial" precision="10" scale="0" nullable="false" jdbcType="4" def="bmV4dHZhbCgncHJvZHVjdHNfcGFsbGV0X2lkX3NlcSc6OnJlZ2NsYXNzKQ==" autoIncrement="true"/>
+      <column name="name" sqlType="varchar" precision="120" scale="0" nullable="false" jdbcType="12"/>
+      <column name="is_closed" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+      <column name="parent_id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <primary-key name="products_pallet_pkey" columns="id"/>
+      <foreign-key name="products_pal_parent_id_7f8338005652c3b3_fk_products_customer_id" columns="parent_id" ref-table="products_customer" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <exported-key name="products_palle_parent_id_3a3170aed26bfee1_fk_products_pallet_id" table="products_palletpurchase" schema="public" catalog="lils" columns="parent_id"/>
+      <index name="products_pallet_name_1397bf314f27f52d_uniq" unique="true" columns="name,parent_id"/>
+      <index name="products_pallet_6be37982" unique="false" columns="parent_id"/>
+    </table>
+    <table name="products_pallet_id_seq" schema="public" catalog="lils" type="SEQUENCE">
+      <column name="sequence_name" sqlType="name" precision="2147483647" scale="0" nullable="false" jdbcType="12"/>
+      <column name="last_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="start_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="increment_by" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="max_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="min_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="cache_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="log_cnt" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="is_cycled" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+      <column name="is_called" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+    </table>
+    <table name="products_palletpurchase" schema="public" catalog="lils" type="TABLE">
+      <column name="id" sqlType="serial" precision="10" scale="0" nullable="false" jdbcType="4" def="bmV4dHZhbCgncHJvZHVjdHNfcGFsbGV0cHVyY2hhc2VfaWRfc2VxJzo6cmVnY2xhc3Mp" autoIncrement="true"/>
+      <column name="quantity_override" sqlType="int4" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <column name="order_override" sqlType="varchar" precision="120" scale="0" nullable="true" jdbcType="12"/>
+      <column name="box_id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="parent_id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="product_id" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <primary-key name="products_palletpurchase_pkey" columns="id"/>
+      <foreign-key name="products_palletpurch_box_id_4d4f0948ae8f4aeb_fk_products_box_id" columns="box_id" ref-table="products_box" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <foreign-key name="products_palle_parent_id_3a3170aed26bfee1_fk_products_pallet_id" columns="parent_id" ref-table="products_pallet" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <foreign-key name="products_pal_product_id_7e92a5a463da59c2_fk_products_product_id" columns="product_id" ref-table="products_product" ref-schema="public" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <index name="products_palletpurchase_product_id_1923e317466e2712_uniq" unique="true" columns="product_id,parent_id"/>
+      <index name="products_palletpurchase_6be37982" unique="false" columns="parent_id"/>
+      <index name="products_palletpurchase_9bea82de" unique="false" columns="product_id"/>
+      <index name="products_palletpurchase_d5c14c0d" unique="false" columns="box_id"/>
+    </table>
+    <table name="products_palletpurchase_id_seq" schema="public" catalog="lils" type="SEQUENCE">
+      <column name="sequence_name" sqlType="name" precision="2147483647" scale="0" nullable="false" jdbcType="12"/>
+      <column name="last_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="start_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="increment_by" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="max_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="min_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="cache_value" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="log_cnt" sqlType="int8" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="is_cycled" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+      <column name="is_called" sqlType="bool" precision="1" scale="0" nullable="false" jdbcType="-7"/>
+    </table>
     <table name="products_product" schema="public" catalog="lils" type="TABLE">
       <column name="id" sqlType="serial" precision="10" scale="0" nullable="false" jdbcType="4" def="bmV4dHZhbCgncHJvZHVjdHNfcHJvZHVjdF9pZF9zZXEnOjpyZWdjbGFzcyk=" autoIncrement="true"/>
       <column name="name" sqlType="varchar" precision="120" scale="0" nullable="false" jdbcType="12"/>
@@ -1934,6 +2047,7 @@
       <column name="order" sqlType="varchar" precision="120" scale="0" nullable="false" jdbcType="12"/>
       <column name="quantity" sqlType="int4" precision="10" scale="0" nullable="false" jdbcType="4"/>
       <primary-key name="products_product_pkey" columns="id"/>
+      <exported-key name="products_pal_product_id_7e92a5a463da59c2_fk_products_product_id" table="products_palletpurchase" schema="public" catalog="lils" columns="product_id"/>
       <exported-key name="products_pro_product_id_5ccfa25bb8a3577f_fk_products_product_id" table="products_productpurchase" schema="public" catalog="lils" columns="product_id"/>
       <index name="products_product_name_13365d1602bcd9d2_uniq" unique="true" columns="name,barcode,order"/>
     </table>

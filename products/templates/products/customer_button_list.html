@@ -1,0 +1,24 @@
+{% extends 'products/base_list.html' %}
+
+{% load i18n %}
+{% load pipeline %}
+
+{% block toolbar %}
+
+{% endblock toolbar %}
+
+{% block list %}
+    {% for object in object_list %}
+        <div class="row">
+        <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+            <a class="btn btn-primary col-lg-12" href="{{ object.get_box_url }}"><span class="glyphicon glyphicon-inbox"></span>  Boxes</a>
+        </div>
+        <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+            <a  class="btn btn-primary col-lg-12" href="{{ object.get_pallet_url }}"><span class="glyphicon glyphicon-shopping-cart"></span>  Pallets</a>
+        </div>
+        </div>
+
+    {% endfor %}
+{% endblock list %}
+
+
