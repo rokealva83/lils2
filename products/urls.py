@@ -79,6 +79,8 @@ urlpatterns = (
 
     url(r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/rename_box/$', rename_box),
 
+    url(r'^customers/(?P<customer_pk>\d+)/pallets/(?P<pallet_pk>\d+)/pallet_purchase/rename_box/$', rename_box),
+
     url(r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/import_file_page/$', import_file_page),
 
     url(r'^customers/(?P<customer_pk>\d+)/boxes/(?P<box_pk>\d+)/products/create/$', ProductCreateView.as_view(),

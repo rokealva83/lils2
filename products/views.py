@@ -403,11 +403,16 @@ class LogsExportView(BaseLogsView, View):
         return response_builder.build()
 
 
-def rename_box(request, box_pk, customer_pk):
-    if request.GET.get('new_name'):
-        Box.objects.filter(id=box_pk).update(name=request.GET.get('new_name'))
-    return HttpResponseRedirect(
-        '%s/customers/%s/boxes/%s/products/' % ('http://erp.supersprox.com', customer_pk, box_pk))
+def rename_box(request, customer_pk, **box_pk):
+    if box_pk.get('box_pk'):
+
+        if request.GET.get('new_name'):
+            Box.objects.filter(id=box_pk.get('box_pk')).update(name=request.GET.get('new_name'))
+        return HttpResponseRedirect('%s/customers/%s/boxes/%s/products/' % ('http://erp.supersprox.com', customer_pk, box_pk.get('box_pk')))
+    elif box_pk.get('pallet_pk'):
+        if request.GET.get('new_name'):
+            Pallet.objects.filter(id=box_pk.get('pallet_pk')).update(name=request.GET.get('new_name'))
+        return HttpResponseRedirect('%s/customers/%s/pallet/%s/pallet_purchase/' % ('http://erp.supersprox.com', customer_pk, box_pk.get('pallet_pk')))
 
 
 from django import forms
